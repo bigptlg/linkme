@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo da Cobra</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #36A5DE;
+    }
+
+    canvas {
+      border: 1px solid #000;
+    }
+
+    #header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px;
+    }
+
+    #controls {
+      display: flex;
+      align-items: center;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+
+    #horizontal-controls {
+      display: flex;
+      margin-top: 10px;
+    }
+
+    #vertical-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    button {
+      margin: 5px;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    .head {
+      background-color: #FFF000; /* Cor da cabeça da cobra */
+    }
+
+    @media (min-width: 600px) {
+      /* Ocultar os controles em dispositivos maiores, como PCs */
+      #controls {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <div id="startRestartButtons">
+      <button onclick="startGame()">Iniciar</button>
+      <button onclick="resetGame()">Reiniciar</button>
+      <button id="pauseButton" onclick="pauseGame()">Pausar</button>
+    </div>
+  </div>
+
+  <canvas id="snakeCanvas" width="400" height="400"></canvas>
+
+  <div id="controls">
+    <div id="vertical-controls">
+      <button onclick="changeDirection('ArrowUp')">↑</button>
+      <button id="downButton" ontouchstart="changeDirection('ArrowDown')" onclick="changeDirection('ArrowDown')">↓</button>
+    </div>
+    <div id="horizontal-controls">
+      <button onclick="changeDirection('ArrowLeft')">←</button>
+      <button onclick="changeDirection('ArrowRight')">→</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("snakeCanvas");
+    const downButton = document.getElementById("downButton");
+    const pauseButton = document.getElementById("pauseButton");
+    const ctx = canvas.getContext("2d");
+
+    const tileSize = 20;
+    let snake = [];
+    let food = {};
+    let dx = 1;
+    let dy = 0;
+    let score = 0;
+    let speed = 200;
+    let gameRunning = false;
+    let countdownInterval;
+
+    function draw() {
+      // Limpar o canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Desenhar a cobra
+      snake.forEach((segment, index) => {
+        ctx.fillStyle = index === 0 ? "#FF0000" : "#EF9013"; // Cor da cabeça diferente do corpo
+        ctx.fillRect(segment.x * tileSize, segment.y * tileSize, tileSize, tileSize);
+      });
+
+      // Desenhar a comida
+      ctx.fillStyle = "#FFF";
+      ctx.fillRect(food.x * tileSize, food.y * tileSize, tileSize, tileSize);
+
+      // Exibir pontuação
+      ctx.fillStyle = "#000";
+      ctx.font = "20px Arial";
+      ctx.fillText("Pontuação: " + score, 10, 20);
+    }
+
+    function move() {
+      const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+      snake.unshift(head);
+
+      // Verificar se a cobra atingiu a comida
+      if (head.x === food.x && head.y === food.y) {
+        // Gerar nova posição para a comida (garantindo que não apareça dentro da cobra)
+        do {
+          food = {
+            x: Math.floor(Math.random() * (canvas.width / tileSize)),
+            y: Math.floor(Math.random() * (canvas.height / tileSize)),
+          };
+        } while (snake.some(segment => segment.x === food.x && segment.y === food.y));
+
+        // Aumentar a pontuação
+        score++;
+
+        // Ajustar a velocidade (até um máximo de 50)
+        if (speed > 150) {
+          speed -= 3;
+        }
+      } else {
+        // Remover a última parte da cobra
+        snake.pop();
+      }
+    }
+
+    function checkCollision() {
+      const head = snake[0];
+
+      // Verificar colisão com as paredes
+      if (head.x < 0 || head.x >= canvas.width / tileSize || head.y < 0 || head.y >= canvas.height / tileSize) {
+        endGame();
+      }
+
+      // Verificar colisão com o próprio corpo
+      for (let i = 1; i < snake.length; i++) {
+        if (head.x === snake[i].x && head.y === snake[i].y) {
+          endGame();
+        }
+      }
+    }
+
+    function resetGame() {
+      snake = [{ x: 10, y: 10 }];
+      food = { x: 15, y: 15 };
+      dx = 1;
+      dy = 0;
+      score = 0;
+      speed = 200;
+      gameRunning = false;
+      document.getElementById("startRestartButtons").style.display = "block";
+      clearInterval(countdownInterval);
+    }
+
+    function endGame() {
+      alert("Game Over! Pontuação: " + score + ". Pressione OK para jogar novamente.");
+      resetGame();
+    }
+
+    function startGame() {
+      if (!gameRunning) {
+        snake = [{ x: 10, y: 10 }];
+        food = { x: 15, y: 15 };
+        dx = 1;
+        dy = 0;
+        score = 0;
+        speed = 200;
+        gameRunning = true;
+        document.getElementById("startRestartButtons").style.display = "none";
+        document.getElementById("downButton").style.display = "block"; // Tornar o botão "Pausar" visível
+        pauseButton.style.display = "block"; // Tornar o botão "Pausar" visível
+        gameLoop(); // Iniciar o jogo diretamente, sem contagem regressiva
+      }
+    }
+
+    function pauseGame() {
+      clearInterval(countdownInterval);
+      gameRunning = false;
+      document.getElementById("startRestartButtons").style.display = "block";
+    }
+
+    function gameLoop() {
+      move();
+      checkCollision();
+      draw();
+      if (gameRunning) {
+        setTimeout(gameLoop, speed); // Alterado para setTimeout para evitar loop infinito
+      }
+    }
+
+    function changeDirection(newDirection) {
+      switch (newDirection) {
+        case "ArrowUp":
+          if (dy !== 1) {
+            dx = 0;
+            dy = -1;
+          }
+          break;
+        case "ArrowDown":
+          if (dy !== -1) {
+            dx = 0;
+            dy = 1;
+          }
+          break;
+        case "ArrowLeft":
+          if (dx !== 1) {
+            dx = -1;
+            dy = 0;
+          }
+          break;
+        case "ArrowRight":
+          if (dx !== -1) {
+            dx = 1;
+            dy = 0;
+          }
+          break;
+      }
+    }
+
+    document.addEventListener("keydown", (event) => {
+      changeDirection(event.key);
+    });
+
+    // Adicionando um evento de toque para o botão "↓" para dispositivos móveis
+    downButton.addEventListener("touchend", () => {
+      changeDirection("ArrowDown");
+    });
+
+    // Adicionando um evento de toque para o botão "Pausar" para dispositivos móveis
+    pauseButton.addEventListener("touchend", () => {
+      pauseGame();
+    });
+  </script>
+</body>
+</html>
