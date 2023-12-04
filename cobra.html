@@ -101,12 +101,6 @@
     let speed = 200;
     let gameRunning = false;
     let countdownInterval;
-    let touchMoveInterval;
-
-    // Variáveis para rastrear gestos
-    let touchStartX = 0;
-    let touchStartY = 0;
-    const gestureThreshold = 20;
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -229,52 +223,12 @@
       dy = 0;
     }
 
-    canvas.addEventListener("touchstart", handleTouchStart);
-    canvas.addEventListener("touchmove", handleTouchMove);
-    canvas.addEventListener("touchend", stopDirection);
-
-    function handleTouchStart(event) {
-      touchStartX = event.touches[0].clientX;
-      touchStartY = event.touches[0].clientY;
-    }
-
-    function handleTouchMove(event) {
-      if (!touchStartX || !touchStartY) {
-        return;
-      }
-
-      const touchEndX = event.touches[0].clientX;
-      const touchEndY = event.touches[0].clientY;
-
-      const deltaX = touchEndX - touchStartX;
-      const deltaY = touchEndY - touchStartY;
-
-      if (Math.abs(deltaX) > gestureThreshold || Math.abs(deltaY) > gestureThreshold) {
-        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-          if (deltaX > 0) {
-            changeDirection("ArrowRight");
-          } else {
-            changeDirection("ArrowLeft");
-          }
-        } else {
-          if (deltaY > 0) {
-            changeDirection("ArrowDown");
-          } else {
-            changeDirection("ArrowUp");
-          }
-
-          touchStartX = 0;
-          touchStartY = 0;
-        }
-      }
-    }
+    downButton.addEventListener("touchstart", () => {
+      changeDirection("ArrowDown");
+    });
 
     document.addEventListener("keydown", (event) => {
       changeDirection(event.key);
-    });
-
-    downButton.addEventListener("touchend", () => {
-      changeDirection("ArrowDown");
     });
 
     function generateFood() {
