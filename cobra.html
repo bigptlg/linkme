@@ -30,6 +30,7 @@
     #controls {
       display: flex;
       align-items: center;
+      flex-direction: column;
       position: fixed;
       bottom: 20px;
       left: 50%;
@@ -80,10 +81,10 @@
   <div id="controls">
     <div id="vertical-controls">
       <button onclick="changeDirection('ArrowUp')">↑</button>
-      <button id="downButton" ontouchstart="changeDirection('ArrowDown')" onclick="changeDirection('ArrowDown')">↓</button>
     </div>
     <div id="horizontal-controls">
       <button onclick="changeDirection('ArrowLeft')">←</button>
+      <button id="downButton" ontouchstart="changeDirection('ArrowDown')" onclick="changeDirection('ArrowDown')">↓</button>
       <button onclick="changeDirection('ArrowRight')">→</button>
     </div>
   </div>
