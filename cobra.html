@@ -69,10 +69,8 @@
 </head>
 <body>
   <div id="header">
-    <div id="startRestartButtons">
+    <div id="startButton">
       <button onclick="startGame()">Iniciar</button>
-      <button onclick="resetGame()">Reiniciar</button>
-      <button id="pauseButton" onclick="pauseGame()">Pausar</button>
     </div>
   </div>
 
@@ -80,19 +78,18 @@
 
   <div id="controls">
     <div id="vertical-controls">
-      <button onclick="changeDirection('ArrowUp')">↑</button>
+      <button ontouchstart="changeDirection('ArrowUp')" ontouchend="stopDirection()">↑</button>
     </div>
     <div id="horizontal-controls">
-      <button onclick="changeDirection('ArrowLeft')">←</button>
-      <button id="downButton" ontouchstart="changeDirection('ArrowDown')" onclick="changeDirection('ArrowDown')">↓</button>
-      <button onclick="changeDirection('ArrowRight')">→</button>
+      <button ontouchstart="changeDirection('ArrowLeft')" ontouchend="stopDirection()">←</button>
+      <button id="downButton" ontouchstart="changeDirection('ArrowDown')" ontouchend="stopDirection()">↓</button>
+      <button ontouchstart="changeDirection('ArrowRight')" ontouchend="stopDirection()">→</button>
     </div>
   </div>
 
   <script>
     const canvas = document.getElementById("snakeCanvas");
     const downButton = document.getElementById("downButton");
-    const pauseButton = document.getElementById("pauseButton");
     const ctx = canvas.getContext("2d");
 
     const tileSize = 20;
@@ -104,6 +101,12 @@
     let speed = 200;
     let gameRunning = false;
     let countdownInterval;
+    let touchMoveInterval;
+
+    // Variáveis para rastrear gestos
+    let touchStartX = 0;
+    let touchStartY = 0;
+    const gestureThreshold = 20;
 
     function draw() {
       // Limpar o canvas
@@ -176,8 +179,9 @@
       score = 0;
       speed = 200;
       gameRunning = false;
-      document.getElementById("startRestartButtons").style.display = "block";
+      document.getElementById("startButton").style.display = "block";
       clearInterval(countdownInterval);
+      clearInterval(touchMoveInterval);
     }
 
     function endGame() {
@@ -194,17 +198,10 @@
         score = 0;
         speed = 200;
         gameRunning = true;
-        document.getElementById("startRestartButtons").style.display = "none";
+        document.getElementById("startButton").style.display = "none";
         document.getElementById("downButton").style.display = "block"; // Tornar o botão "Pausar" visível
-        pauseButton.style.display = "block"; // Tornar o botão "Pausar" visível
         gameLoop(); // Iniciar o jogo diretamente, sem contagem regressiva
       }
-    }
-
-    function pauseGame() {
-      clearInterval(countdownInterval);
-      gameRunning = false;
-      document.getElementById("startRestartButtons").style.display = "block";
     }
 
     function gameLoop() {
@@ -245,6 +242,57 @@
       }
     }
 
+    function stopDirection() {
+      // Parar o movimento ao levantar o dedo
+      dx = 0;
+      dy = 0;
+    }
+
+    // Adicionando eventos de toque para detectar gestos
+    canvas.addEventListener("touchstart", handleTouchStart);
+    canvas.addEventListener("touchmove", handleTouchMove);
+    canvas.addEventListener("touchend", stopDirection);
+
+    function handleTouchStart(event) {
+      touchStartX = event.touches[0].clientX;
+      touchStartY = event.touches[0].clientY;
+    }
+
+    function handleTouchMove(event) {
+      if (!touchStartX || !touchStartY) {
+        return;
+      }
+
+      const touchEndX = event.touches[0].clientX;
+      const touchEndY = event.touches[0].clientY;
+
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = touchEndY - touchStartY;
+
+      if (Math.abs(deltaX) > gestureThreshold || Math.abs(deltaY) > gestureThreshold) {
+        // Determinar a direção do gesto
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+          // Deslocamento horizontal
+          if (deltaX > 0) {
+            changeDirection("ArrowRight");
+          } else {
+            changeDirection("ArrowLeft");
+          }
+        } else {
+          // Deslocamento vertical
+          if (deltaY > 0) {
+            changeDirection("ArrowDown");
+          } else {
+            changeDirection("ArrowUp");
+          }
+        }
+
+        // Reiniciar valores de início de toque
+        touchStartX = 0;
+        touchStartY = 0;
+      }
+    }
+
     document.addEventListener("keydown", (event) => {
       changeDirection(event.key);
     });
@@ -252,11 +300,6 @@
     // Adicionando um evento de toque para o botão "↓" para dispositivos móveis
     downButton.addEventListener("touchend", () => {
       changeDirection("ArrowDown");
-    });
-
-    // Adicionando um evento de toque para o botão "Pausar" para dispositivos móveis
-    pauseButton.addEventListener("touchend", () => {
-      pauseGame();
     });
   </script>
 </body>
