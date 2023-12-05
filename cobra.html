@@ -14,7 +14,7 @@
       height: 100vh;
       margin: 0;
       background-color: #36A5DE;
-      color: #FFF; /* Cor da fonte branca */
+      color: #FFF;
     }
 
     canvas {
@@ -42,7 +42,7 @@
       text-align: center;
     }
 
-    #horizontal-controls, #vertical-controls {
+    #vertical-controls, #horizontal-controls {
       display: flex;
       margin-top: 10px;
     }
@@ -51,7 +51,7 @@
       margin: 5px;
       padding: 35px;
       font-size: 20px;
-      color: #FFF; /* Cor da fonte branca */
+      color: #FFF;
       background-color: #EF9013;
       border: none;
       cursor: pointer;
@@ -61,7 +61,7 @@
       background-color: #EF9013;
     }
 
-    @media (min-width: 769px) {
+    @media (min-width: 600px) {
       #controls {
         display: none;
       }
@@ -71,7 +71,7 @@
 <body>
   <div id="header">
     <div id="startButton">
-      <button onclick="startGame()">Iniciar</button>
+      <button onclick="startGameOnClick()">Iniciar</button>
     </div>
   </div>
 
@@ -79,12 +79,12 @@
 
   <div id="controls">
     <div id="vertical-controls">
-      <button onclick="changeDirection('ArrowUp')">↑</button>
+      <button onclick="startGameOnClick()">↑</button>
     </div>
     <div id="horizontal-controls">
-      <button onclick="changeDirection('ArrowLeft')">←</button>
-      <button id="downButton" onclick="changeDirection('ArrowDown')">↓</button>
-      <button onclick="changeDirection('ArrowRight')">→</button>
+      <button onclick="startGameOnClick()">←</button>
+      <button id="downButton" onclick="startGameOnClick()">↓</button>
+      <button onclick="startGameOnClick()">→</button>
     </div>
   </div>
 
