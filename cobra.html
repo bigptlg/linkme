@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="favicon1.ico" type="image/x-icon">
   <title>Jogo da Cobra</title>
   <style>
     body {
@@ -57,7 +58,7 @@
     }
 
     .head {
-      background-color: #FFF000;
+      background-color: #EF9013;
     }
 
     @media (min-width: 600px) {
@@ -106,7 +107,7 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       snake.forEach((segment, index) => {
-        ctx.fillStyle = index === 0 ? "#FFF000" : "#EF9013";
+        ctx.fillStyle = index === 0 ? "#EF9013" : "#FFFFFF";
         ctx.fillRect(segment.x * tileSize, segment.y * tileSize, tileSize, tileSize);
       });
 
