@@ -14,7 +14,7 @@
       height: 100vh;
       margin: 0;
       background-color: #36A5DE;
-      color: #FFF;
+      color: #FFF; /* Cor da fonte branca */
     }
 
     canvas {
@@ -42,7 +42,7 @@
       text-align: center;
     }
 
-    #vertical-controls, #horizontal-controls {
+    #horizontal-controls, #vertical-controls {
       display: flex;
       margin-top: 10px;
     }
@@ -51,7 +51,7 @@
       margin: 5px;
       padding: 35px;
       font-size: 20px;
-      color: #FFF;
+      color: #FFF; /* Cor da fonte branca */
       background-color: #EF9013;
       border: none;
       cursor: pointer;
@@ -71,7 +71,7 @@
 <body>
   <div id="header">
     <div id="startButton">
-      <button onclick="startGameOnClick()">Iniciar</button>
+      <button onclick="startGame()">Iniciar</button>
     </div>
   </div>
 
@@ -79,12 +79,12 @@
 
   <div id="controls">
     <div id="vertical-controls">
-      <button onclick="startGameOnClick()">↑</button>
+      <button onclick="changeDirection('ArrowUp')">↑</button>
     </div>
     <div id="horizontal-controls">
-      <button onclick="startGameOnClick()">←</button>
-      <button id="downButton" onclick="startGameOnClick()">↓</button>
-      <button onclick="startGameOnClick()">→</button>
+      <button onclick="changeDirection('ArrowLeft')">←</button>
+      <button id="downButton" onclick="changeDirection('ArrowDown')">↓</button>
+      <button onclick="changeDirection('ArrowRight')">→</button>
     </div>
   </div>
 
@@ -166,7 +166,7 @@
       resetGame();
     }
 
-    function startGameOnClick() {
+    function startGame() {
       if (!gameRunning) {
         snake = [{ x: 10, y: 10 }];
         generateFood();
