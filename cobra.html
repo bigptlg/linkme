@@ -196,8 +196,8 @@
           generateDangerFood();
         }
 
-        if (speed > 150) {
-          speed -= 3;
+        if (speed > 99) {
+          speed -= 5;
         }
       } else {
         snake.pop();
@@ -260,7 +260,7 @@
     }
 
     function endGame() {
-      gameOverText.textContent = "Perdeste! Pontuação: " + score;
+      gameOverText.textContent = "PERDESTE! Pontuação: " + score;
       gameOverMessage.style.display = "block";
     }
 
