@@ -61,10 +61,26 @@
       background-color: #EF9013;
     }
 
-    @media (min-width: 769px) {
-      #controls {
-        display: none;
-      }
+    .portal {
+      background-color: #34eb67;
+    }
+
+    .specialFood {
+      background-color: #EF9013;
+    }
+
+    #gameOverMessage {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 20px;
+      background-color: #EF9013;
+      color: #FFF;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     }
   </style>
 </head>
@@ -88,14 +104,23 @@
     </div>
   </div>
 
+  <div id="gameOverMessage">
+    <p id="gameOverText"></p>
+    <button onclick="resetGame()">Jogar Novamente</button>
+  </div>
+
   <script>
     const canvas = document.getElementById("snakeCanvas");
     const downButton = document.getElementById("downButton");
+    const gameOverMessage = document.getElementById("gameOverMessage");
+    const gameOverText = document.getElementById("gameOverText");
     const ctx = canvas.getContext("2d");
 
     const tileSize = 20;
     let snake = [];
     let food = {};
+    let portals = [];
+    let specialFood = {};
     let dx = 1;
     let dy = 0;
     let score = 0;
@@ -114,18 +139,41 @@
       ctx.fillStyle = "#FFF";
       ctx.fillRect(food.x * tileSize, food.y * tileSize, tileSize, tileSize);
 
+      portals.forEach(portal => {
+        ctx.fillStyle = "#34eb67";
+        ctx.fillRect(portal.x * tileSize, portal.y * tileSize, tileSize, tileSize);
+      });
+
       ctx.fillStyle = "#FFF";
       ctx.font = "20px Arial";
       ctx.fillText("Pontuação: " + score, 10, 20);
+
+      if (specialFood.active) {
+        ctx.fillStyle = "#EF9013";
+        ctx.fillRect(specialFood.x * tileSize, specialFood.y * tileSize, tileSize, tileSize);
+        ctx.fillStyle = "#FFF";
+        ctx.font = "15px Arial";
+        ctx.fillText("Tempo: " + specialFood.timer + "s", specialFood.x * tileSize, (specialFood.y + 1) * tileSize);
+      }
     }
 
     function move() {
       const head = { x: snake[0].x + dx, y: snake[0].y + dy };
       snake.unshift(head);
 
+      checkPortalCollision();
+
       if (head.x === food.x && head.y === food.y) {
         generateFood();
         score++;
+
+        if (score % 20 === 0) {
+          generateRandomPortal();
+        }
+
+        if (score % 40 === 0) {
+          generateSpecialFood();
+        }
 
         if (speed > 150) {
           speed -= 3;
@@ -133,6 +181,21 @@
       } else {
         snake.pop();
       }
+    }
+
+    function checkPortalCollision() {
+      const head = snake[0];
+      for (let i = 0; i < portals.length; i++) {
+        const portal = portals[i];
+        if (head.x === portal.x && head.y === portal.y) {
+          usePortal(i);
+        }
+      }
+    }
+
+    function usePortal(portalIndex) {
+      const newHead = portals[(portalIndex + 1) % portals.length];
+      snake[0] = { x: newHead.x, y: newHead.y };
     }
 
     function checkCollision() {
@@ -147,11 +210,16 @@
           endGame();
         }
       }
+
+      if (specialFood.active && head.x === specialFood.x && head.y === specialFood.y) {
+        consumeSpecialFood();
+      }
     }
 
     function resetGame() {
       snake = [{ x: 10, y: 10 }];
       generateFood();
+      generateRandomPortal();
       dx = 1;
       dy = 0;
       score = 0;
@@ -159,17 +227,19 @@
       gameRunning = false;
       document.getElementById("startButton").style.display = "block";
       clearInterval(countdownInterval);
+      gameOverMessage.style.display = "none";
     }
 
     function endGame() {
-      alert("Game Over! Pontuação: " + score + ". Pressione OK para jogar novamente.");
-      resetGame();
+      gameOverText.textContent = "Perdeste! Pontuação: " + score;
+      gameOverMessage.style.display = "block";
     }
 
     function startGame() {
       if (!gameRunning) {
         snake = [{ x: 10, y: 10 }];
         generateFood();
+        generateRandomPortal();
         dx = 1;
         dy = 0;
         score = 0;
@@ -177,6 +247,7 @@
         gameRunning = true;
         document.getElementById("startButton").style.display = "none";
         downButton.style.display = "block";
+        gameOverMessage.style.display = "none";
         gameLoop();
       }
     }
@@ -234,6 +305,46 @@
           y: Math.floor(Math.random() * (canvas.height / tileSize)),
         };
       } while (snake.some(segment => segment.x === food.x && segment.y === food.y));
+    }
+
+    function generateRandomPortal() {
+      if (Math.random() < 0.05) {
+        do {
+          const portal = {
+            x: Math.floor(Math.random() * (canvas.width / tileSize)),
+            y: Math.floor(Math.random() * (canvas.height / tileSize)),
+          };
+          if (!portals.some(existingPortal => existingPortal.x === portal.x && existingPortal.y === portal.y) &&
+              !snake.some(segment => segment.x === portal.x && segment.y === portal.y) &&
+              !(food.x === portal.x && food.y === portal.y)) {
+            portals.push(portal);
+            break;
+          }
+        } while (true);
+      }
+    }
+
+    function generateSpecialFood() {
+      specialFood = {
+        x: Math.floor(Math.random() * (canvas.width / tileSize)),
+        y: Math.floor(Math.random() * (canvas.height / tileSize)),
+        active: true,
+        timer: 8,
+      };
+
+      const timerInterval = setInterval(() => {
+        specialFood.timer--;
+        if (specialFood.timer === 0) {
+          clearInterval(timerInterval);
+          specialFood.active = false;
+        }
+      }, 1000);
+    }
+
+    function consumeSpecialFood() {
+      const segmentsToRemove = Math.min(5, snake.length - 1);
+      snake.splice(snake.length - segmentsToRemove, segmentsToRemove);
+      specialFood.active = false;
     }
   </script>
 </body>
