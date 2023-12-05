@@ -1,97 +1,393 @@
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redes Sociais</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha256-... (hash)" crossorigin="anonymous">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    
-   <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6X2RNTBSST"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Jogo da Cobra</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      width: 97%;
+      height: 100vh;
+      margin: 0;
+      background-color: #36A5DE;
+      color: #FFF; /* Cor da fonte branca */
+    }
 
-      gtag('config', 'G-6X2RNTBSST');
-    </script>
+    canvas {
+      border: 1px solid #fff;
+      margin-top: 20px;
+    }
 
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #36A5DE;
-            color: #fff;
-            text-align: center;
-        }
+    #header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
 
-        header {
-            background-color: #EF9013;
-            padding: 15px;
-            border-bottom-left-radius: 15%;
-            border-bottom-right-radius: 15%;
-        }
+    #controls {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
 
-        header img {
-            max-width: 100%;
-            max-height: 150px;
-            height: auto;
-            display: block;
-            margin: 0 auto;
-        }
+    #horizontal-controls, #vertical-controls {
+      display: flex;
+      margin-top: 10px;
+    }
 
-        .logo:hover{
-            transform: scale(1.1);
-        }
-        
-        .content {
-            text-align: center;
-            margin-top: 20px;
-        }
+    button {
+      margin: 5px;
+      padding: 35px;
+      font-size: 20px;
+      color: #FFF; /* Cor da fonte branca */
+      background-color: #EF9013;
+      border: none;
+      cursor: pointer;
+    }
 
-        ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+    .head {
+      background-color: #EF9013;
+    }
 
-        li {
-            margin-bottom: 10px;
-        }
+    .portal {
+      background-color: #34eb67;
+    }
 
-        a {
-            text-decoration: none;
-            color: #fff;
-            display: inline-block;
-            padding: 15px 35px;
-            margin: 5px;
-            background-color: #EF9013;
-            border-radius: 5%;
-        }
+    .specialFood {
+      background-color: #EF9013;
+    }
 
-        a:hover {
-            transform: scale(1.1);
-            background-color: #FFA733;
-        }
-    </style>
+    .dangerFood {
+      background-color: #FF0000;
+    }
+
+    #gameOverMessage {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 20px;
+      background-color: #EF9013;
+      color: #FFF;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    @media (min-width: 769px) {
+      #controls {
+        display: none;
+      }
+    }
+  </style>
 </head>
 <body>
-
-    <header>
-        <a href="cobra.html" target="_blank"><img src="EdyGlobalsf.png" alt="Edy Global" class="logo"></a>
-    </header>
-
-    <div class="content">
-        <h1>Redes Sociais da Empresa</h1>
-
-        <ul>
-            <li><a href="https://www.facebook.com/profile.php?id=100076204514162" target="_blank"><i class="fab fa-facebook"></i> Facebook</a></li>
-            <li><a href="https://www.instagram.com/edyglobal_solutions_su_lda" target="_blank"><i class="fab fa-instagram"></i> Instagram</a></li>
-            <li><a href="https://api.whatsapp.com/send?phone=244948558954" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a></li>
-            <li><a href="https://api.whatsapp.com/send?phone=244936629314" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a></li>           
-            </ul>
+  <div id="header">
+    <div id="startButton">
+      <button onclick="startGame()">Iniciar</button>
     </div>
+  </div>
 
+  <canvas id="snakeCanvas" width="400" height="400"></canvas>
+
+  <div id="controls">
+    <div id="vertical-controls">
+      <button onclick="changeDirection('ArrowUp')">↑</button>
+    </div>
+    <div id="horizontal-controls">
+      <button onclick="changeDirection('ArrowLeft')">←</button>
+      <button id="downButton" onclick="changeDirection('ArrowDown')">↓</button>
+      <button onclick="changeDirection('ArrowRight')">→</button>
+    </div>
+  </div>
+
+  <div id="gameOverMessage">
+    <p id="gameOverText"></p>
+    <button onclick="resetGame()">Jogar Novamente</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("snakeCanvas");
+    const downButton = document.getElementById("downButton");
+    const gameOverMessage = document.getElementById("gameOverMessage");
+    const gameOverText = document.getElementById("gameOverText");
+    const ctx = canvas.getContext("2d");
+
+    const tileSize = 20;
+    let snake = [];
+    let food = {};
+    let portals = [];
+    let specialFood = {};
+    let dangerFood = {};
+    let dx = 1;
+    let dy = 0;
+    let score = 0;
+    let speed = 200;
+    let gameRunning = false;
+    let countdownInterval;
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      snake.forEach((segment, index) => {
+        ctx.fillStyle = index === 0 ? "#EF9013" : "#FFFFFF";
+        ctx.fillRect(segment.x * tileSize, segment.y * tileSize, tileSize, tileSize);
+      });
+
+      ctx.fillStyle = "#FFF";
+      ctx.fillRect(food.x * tileSize, food.y * tileSize, tileSize, tileSize);
+
+      portals.forEach(portal => {
+        ctx.fillStyle = "#34eb67";
+        ctx.fillRect(portal.x * tileSize, portal.y * tileSize, tileSize, tileSize);
+      });
+
+      ctx.fillStyle = "#FFF";
+      ctx.font = "20px Arial";
+      ctx.fillText("Pontuação: " + score, 10, 20);
+
+      if (specialFood.active) {
+        ctx.fillStyle = "#EF9013";
+        ctx.fillRect(specialFood.x * tileSize, specialFood.y * tileSize, tileSize, tileSize);
+        ctx.fillStyle = "#FFF";
+        ctx.font = "15px Arial";
+        ctx.fillText("Tempo: " + specialFood.timer + "s", specialFood.x * tileSize, (specialFood.y + 1) * tileSize);
+      }
+
+      if (dangerFood.active) {
+        ctx.fillStyle = "#FF0000";
+        ctx.fillRect(dangerFood.x * tileSize, dangerFood.y * tileSize, tileSize, tileSize);
+      }
+    }
+
+    function move() {
+      const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+      snake.unshift(head);
+
+      checkPortalCollision();
+
+      if (head.x === food.x && head.y === food.y) {
+        generateFood();
+        score++;
+
+        if (score % 20 === 0) {
+          generateRandomPortal();
+        }
+
+        if (score % 40 === 0) {
+          generateSpecialFood();
+        }
+
+        if (score % 8 === 0 && Math.random() < 0.75) {
+          generateDangerFood();
+        }
+
+        if (speed > 99) {
+          speed -= 5;
+        }
+      } else {
+        snake.pop();
+      }
+
+      if (score === 410) {
+        congratulatePlayer();
+      }
+    }
+
+    function checkPortalCollision() {
+      const head = snake[0];
+      for (let i = 0; i < portals.length; i++) {
+        const portal = portals[i];
+        if (head.x === portal.x && head.y === portal.y) {
+          usePortal(i);
+        }
+      }
+    }
+
+    function usePortal(portalIndex) {
+      const newHead = portals[(portalIndex + 1) % portals.length];
+      snake[0] = { x: newHead.x, y: newHead.y };
+    }
+
+    function checkCollision() {
+      const head = snake[0];
+
+      if (head.x < 0 || head.x >= canvas.width / tileSize || head.y < 0 || head.y >= canvas.height / tileSize) {
+        endGame();
+      }
+
+      for (let i = 1; i < snake.length; i++) {
+        if (head.x === snake[i].x && head.y === snake[i].y) {
+          endGame();
+        }
+      }
+
+      if (specialFood.active && head.x === specialFood.x && head.y === specialFood.y) {
+        consumeSpecialFood();
+      }
+
+      if (dangerFood.active && head.x === dangerFood.x && head.y === dangerFood.y) {
+        endGame();
+      }
+    }
+
+    function resetGame() {
+      snake = [{ x: 10, y: 10 }];
+      generateFood();
+      generateRandomPortal();
+      dx = 1;
+      dy = 0;
+      score = 0;
+      speed = 200;
+      gameRunning = false;
+      document.getElementById("startButton").style.display = "block";
+      clearInterval(countdownInterval);
+      gameOverMessage.style.display = "none";
+    }
+
+    function endGame() {
+      gameOverText.textContent = "Perdeste! Pontuação: " + score;
+      gameOverMessage.style.display = "block";
+    }
+
+    function congratulatePlayer() {
+      alert("Wau! Você é gamer. Parabéns!");
+      resetGame();
+    }
+
+    function startGame() {
+      if (!gameRunning) {
+        snake = [{ x: 10, y: 10 }];
+        generateFood();
+        generateRandomPortal();
+        dx = 1;
+        dy = 0;
+        score = 0;
+        speed = 200;
+        gameRunning = true;
+        document.getElementById("startButton").style.display = "none";
+        downButton.style.display = "block";
+        gameOverMessage.style.display = "none";
+        gameLoop();
+      }
+    }
+
+    function gameLoop() {
+      move();
+      checkCollision();
+      draw();
+      if (gameRunning) {
+        setTimeout(gameLoop, speed);
+      }
+    }
+
+    function changeDirection(newDirection) {
+      switch (newDirection) {
+        case "ArrowUp":
+          if (dy !== 1) {
+            dx = 0;
+            dy = -1;
+          }
+          break;
+        case "ArrowDown":
+          if (dy !== -1) {
+            dx = 0;
+            dy = 1;
+          }
+          break;
+        case "ArrowLeft":
+          if (dx !== 1) {
+            dx = -1;
+            dy = 0;
+          }
+          break;
+        case "ArrowRight":
+          if (dx !== -1) {
+            dx = 1;
+            dy = 0;
+          }
+          break;
+      }
+    }
+
+    downButton.addEventListener("click", () => {
+      changeDirection("ArrowDown");
+    });
+
+    document.addEventListener("keydown", (event) => {
+      changeDirection(event.key);
+    });
+
+    function generateFood() {
+      do {
+        food = {
+          x: Math.floor(Math.random() * (canvas.width / tileSize)),
+          y: Math.floor(Math.random() * (canvas.height / tileSize)),
+        };
+      } while (snake.some(segment => segment.x === food.x && segment.y === food.y));
+    }
+
+    function generateRandomPortal() {
+      if (Math.random() < 0.05) {
+        do {
+          const portal = {
+            x: Math.floor(Math.random() * (canvas.width / tileSize)),
+            y: Math.floor(Math.random() * (canvas.height / tileSize)),
+          };
+          if (!portals.some(existingPortal => existingPortal.x === portal.x && existingPortal.y === portal.y) &&
+              !snake.some(segment => segment.x === portal.x && segment.y === portal.y) &&
+              !(food.x === portal.x && food.y === portal.y)) {
+            portals.push(portal);
+            break;
+          }
+        } while (true);
+      }
+    }
+
+    function generateSpecialFood() {
+      specialFood = {
+        x: Math.floor(Math.random() * (canvas.width / tileSize)),
+        y: Math.floor(Math.random() * (canvas.height / tileSize)),
+        active: true,
+        timer: 8,
+      };
+
+      const timerInterval = setInterval(() => {
+        specialFood.timer--;
+        if (specialFood.timer === 0) {
+          clearInterval(timerInterval);
+          specialFood.active = false;
+        }
+      }, 1000);
+    }
+
+    function consumeSpecialFood() {
+      const segmentsToRemove = Math.min(5, snake.length - 1);
+      snake.splice(snake.length - segmentsToRemove, segmentsToRemove);
+      specialFood.active = false;
+    }
+
+    function generateDangerFood() {
+      dangerFood = {
+        x: Math.floor(Math.random() * (canvas.width / tileSize)),
+        y: Math.floor(Math.random() * (canvas.height / tileSize)),
+        active: true,
+      };
+    }
+  </script>
 </body>
 </html>
