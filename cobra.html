@@ -15,7 +15,7 @@
       height: 100vh;
       margin: 0;
       background-color: #36A5DE;
-      color: #FFF; /* Cor da fonte branca */
+      color: #FFF;
     }
 
     canvas {
@@ -52,7 +52,7 @@
       margin: 5px;
       padding: 35px;
       font-size: 20px;
-      color: #FFF; /* Cor da fonte branca */
+      color: #FFF;
       background-color: #EF9013;
       border: none;
       cursor: pointer;
@@ -132,13 +132,13 @@
     let food = {};
     let portals = [];
     let specialFood = {};
-    let dangerFood = {};
+    let dangerFood = { x: 0, y: 0, active: false, timer: 0 }; // Inicializa DangerFood
     let dx = 1;
     let dy = 0;
     let score = 0;
     let speed = 200;
     let gameRunning = false;
-    let countdownInterval;
+    let countdownInterval = null;
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -160,6 +160,19 @@
       ctx.font = "20px Arial";
       ctx.fillText("Pontuação: " + score, 10, 20);
 
+      // Adiciona lógica para desenhar e controlar o temporizador da DangerFood
+      if (dangerFood.active) {
+        ctx.fillStyle = "#FF0000";
+        ctx.fillRect(dangerFood.x * tileSize, dangerFood.y * tileSize, tileSize, tileSize);
+
+        if (dangerFood.timer > 0) {
+          ctx.fillStyle = "#FFF";
+          ctx.font = "15px Arial";
+          ctx.fillText("Tempo: " + dangerFood.timer + "s", dangerFood.x * tileSize, (dangerFood.y + 1) * tileSize);
+        }
+      }
+
+      // Adiciona lógica para desenhar a SpecialFood
       if (specialFood.active) {
         ctx.fillStyle = "#EF9013";
         ctx.fillRect(specialFood.x * tileSize, specialFood.y * tileSize, tileSize, tileSize);
@@ -167,46 +180,50 @@
         ctx.font = "15px Arial";
         ctx.fillText("Tempo: " + specialFood.timer + "s", specialFood.x * tileSize, (specialFood.y + 1) * tileSize);
       }
-
-      if (dangerFood.active) {
-        ctx.fillStyle = "#FF0000";
-        ctx.fillRect(dangerFood.x * tileSize, dangerFood.y * tileSize, tileSize, tileSize);
-      }
     }
 
-    function move() {
-      const head = { x: snake[0].x + dx, y: snake[0].y + dy };
-      snake.unshift(head);
+function move() {
+  const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+  snake.unshift(head);
 
-      checkPortalCollision();
+  checkPortalCollision();
 
-      if (head.x === food.x && head.y === food.y) {
-        generateFood();
-        score++;
+  if (head.x === food.x && head.y === food.y) {
+    generateFood();
+    score++;
 
-        if (score % 20 === 0) {
-          generateRandomPortal();
-        }
-
-        if (score % 40 === 0) {
-          generateSpecialFood();
-        }
-
-        if (score % 8 === 0 && Math.random() < 0.75) {
-          generateDangerFood();
-        }
-
-        if (speed > 99) {
-          speed -= 5;
-        }
-      } else {
-        snake.pop();
-      }
-
-      if (score === 410) {
-        congratulatePlayer();
-      }
+    if (score % 20 === 0) {
+      generateRandomPortal();
     }
+
+    if (score % 40 === 0) {
+      generateSpecialFood();
+    }
+
+    if (score % 8 === 0 && Math.random() < 0.75) {
+      generateDangerFood();
+    }
+
+    // Ajuste para tornar a cobra mais rápida à medida que a pontuação aumenta
+    speed = Math.max(50, 200 - score * 2);
+  } else {
+    snake.pop();
+  }
+
+  if (score === 410) {
+    congratulatePlayer();
+  }
+
+  // Verifica o temporizador da DangerFood e desativa quando atinge zero
+  if (dangerFood.active) {
+    if (dangerFood.timer === 0) {
+      dangerFood.active = false;
+    }
+  }
+
+  // Desenha todos os elementos após a movimentação
+  draw();
+}
 
     function checkPortalCollision() {
       const head = snake[0];
@@ -254,14 +271,19 @@
       score = 0;
       speed = 200;
       gameRunning = false;
-      document.getElementById("startButton").style.display = "block";
-      clearInterval(countdownInterval);
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+      }
       gameOverMessage.style.display = "none";
+      document.getElementById("startButton").style.display = "block";
     }
 
     function endGame() {
-      gameOverText.textContent = "PERDESTE! Pontuação: " + score;
-      gameOverMessage.style.display = "block";
+      if (gameRunning) {
+        gameOverText.textContent = "PERDESTE! Pontuação: " + score;
+        gameOverMessage.style.display = "block";
+        gameRunning = false;
+      }
     }
 
     function congratulatePlayer() {
@@ -386,7 +408,16 @@
         x: Math.floor(Math.random() * (canvas.width / tileSize)),
         y: Math.floor(Math.random() * (canvas.height / tileSize)),
         active: true,
+        timer: 15, // Define o temporizador para 15 segundos
       };
+
+      const timerInterval = setInterval(() => {
+        dangerFood.timer--;
+        if (dangerFood.timer === 0) {
+          clearInterval(timerInterval);
+          dangerFood.active = false;
+        }
+      }, 1000);
     }
   </script>
 </body>
