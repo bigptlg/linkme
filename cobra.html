@@ -192,7 +192,7 @@ function move() {
     generateFood();
     score++;
 
-    if (score % 20 === 0) {
+    if (score % 10 === 0) {
       generateRandomPortal();
     }
 
@@ -364,7 +364,7 @@ function move() {
     }
 
     function generateRandomPortal() {
-      if (Math.random() < 0.05) {
+      if (Math.random() < 0.08) {
         do {
           const portal = {
             x: Math.floor(Math.random() * (canvas.width / tileSize)),
